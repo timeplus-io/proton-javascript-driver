@@ -1,0 +1,38 @@
+{
+  "name": "@timeplus/proton-javascript-driver",
+  "version": "1.0.0",
+  "description": "Streaming REST client for Timeplus Proton",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timeplus-io/proton-javascript-driver.git"
+  },
+  "keywords": [
+    "timeplus",
+    "proton",
+    "streaming",
+    "sql",
+    "database",
+    "client"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node example.ts",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "@types/node": "^20.0.0"
+  }
+}
