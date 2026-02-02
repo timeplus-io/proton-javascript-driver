@@ -15,14 +15,14 @@ const client = new ProtonClient(config: ProtonConfig);
 | Property | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
 | `host` | `string` | No | `"localhost"` | The Proton server hostname or IP address |
-| `port` | `number` | No | `3128` | The Proton server HTTP port |
+| `port` | `number` | No | `3218` | The Proton server HTTP port |
 | `username` | `string` | No | - | Username for basic authentication |
 | `password` | `string` | No | `""` | Password for basic authentication |
 | `timeout` | `number` | No | - | Connection timeout in milliseconds. If not set, no timeout is applied |
 
 #### Examples
 
-**Default connection (localhost:3128):**
+**Default connection (localhost:3218):**
 ```typescript
 const client = new ProtonClient();
 ```
@@ -55,7 +55,7 @@ const client = new ProtonClient({
 ```typescript
 const client = new ProtonClient({
   host: "proton.example.com",
-  port: 3128,
+  port: 3218,
   username: "admin",
   password: "secret",
   timeout: 30000,
@@ -241,7 +241,7 @@ Configuration object for the client constructor.
 ```typescript
 interface ProtonConfig {
   host?: string;     // default: "localhost"
-  port?: number;     // default: 3128
+  port?: number;     // default: 3218
   username?: string;
   password?: string;
   timeout?: number;

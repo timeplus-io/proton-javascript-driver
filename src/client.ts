@@ -2,7 +2,7 @@ import { ProtonConfig, QueryOptions, QueryResult, RowData } from "./types";
 import { ndjsonStreamParser } from "./parser";
 
 const DEFAULT_HOST = "localhost";
-const DEFAULT_PORT = 3128;
+const DEFAULT_PORT = 3218;
 
 export class ProtonClient {
   private url: string;

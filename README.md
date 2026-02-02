@@ -15,7 +15,7 @@ import { ProtonClient } from "@timeplus/proton-javascript-driver";
 
 const client = new ProtonClient({
   host: "localhost",  // optional, default: "localhost"
-  port: 3128,         // optional, default: 3128
+  port: 3218,         // optional, default: 3218
   timeout: 30000,     // optional: connection timeout in ms
 });
 
@@ -38,7 +38,7 @@ setTimeout(() => abort(), 10000);
 ```typescript
 interface ProtonConfig {
   host?: string;         // Proton server host (default: "localhost")
-  port?: number;         // Proton server port (default: 3128)
+  port?: number;         // Proton server port (default: 3218)
   username?: string;     // Optional basic auth username
   password?: string;     // Optional basic auth password
   timeout?: number;      // Connection timeout in milliseconds

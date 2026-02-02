@@ -37,6 +37,6 @@ This is a streaming REST client for Timeplus Proton, a real-time database. The c
 
 Configuration options:
 - `host`: Server hostname (default: "localhost")
-- `port`: Server port (default: 3128)
+- `port`: Server port (default: 3218)
 - `timeout`: Connection timeout in milliseconds
 - `username`/`password`: Optional basic auth credentials

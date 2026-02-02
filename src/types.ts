@@ -1,6 +1,6 @@
 export interface ProtonConfig {
   host?: string;   // Proton server host (default: "localhost")
-  port?: number;   // Proton server port (default: 3128)
+  port?: number;   // Proton server port (default: 3218)
   username?: string;
   password?: string;
   timeout?: number; // Connection timeout in milliseconds

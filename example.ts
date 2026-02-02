@@ -8,7 +8,7 @@ import { ProtonClient } from "./src";
 async function run() {
   const client = new ProtonClient({
     host: "localhost",  // default: "localhost"
-    port: 3218,         // default: 3128
+    port: 3218,         // default: 3218
     timeout: 30000,     // 30 second connection timeout
   });
 
