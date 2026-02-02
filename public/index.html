@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Proton Stream Test</title>
+    <style>
+        body { font-family: monospace; background: #1a1a1a; color: #00ff00; padding: 20px; }
+        #results { border: 1px solid #333; height: 400px; overflow-y: scroll; padding: 10px; }
+        .row { margin-bottom: 5px; border-bottom: 1px solid #222; }
+    </style>
+</head>
+<body>
+    <h1>Proton Live Stream</h1>
+    <button id="start">Start Query</button>
+    <div id="results">Click Start to see live market data...</div>
+
+    <script>
+        async function* parseNDJSON(reader) {
+            const decoder = new TextDecoder();
+            let buffer = "";
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop();
+                for (const line of lines) yield JSON.parse(line);
+            }
+        }
+
+        document.getElementById('start').onclick = async () => {
+            const container = document.getElementById('results');
+            container.innerHTML = "Connecting...";
+
+            const response = await fetch('http://localhost:8001/query', {
+                method: 'POST',
+                body: "SELECT symbol, price, _tp_time FROM us_market_data"
+            });
+
+            const stream = parseNDJSON(response.body.getReader());
+            for await (const row of stream) {
+                const div = document.createElement('div');
+                div.className = 'row';
+                div.textContent = `[${row._tp_time}] ${row.symbol}: $${row.price}`;
+                container.prepend(div); // Show newest at top
+            }
+        };
+    </script>
+</body>
+</html>
