@@ -2,6 +2,8 @@
 
 A streaming REST client for [Timeplus Proton](https://github.com/timeplus-io/proton), designed for real-time SQL queries with infinite result streams.
 
+visit https://timeplus-io.github.io/vistral/ for examples and playground
+
 ## Installation
 
 ```bash
