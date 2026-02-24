@@ -8,10 +8,11 @@ const PROTON_URL = 'http://localhost:3218'; // Change to 8123 if using ClickHous
 app.use(cors());
 app.use(express.text()); // To read the SQL string from the request body
 
-app.post('/query', async (req, res) => {
+// Handle both / and /query for compatibility with driver and old examples
+app.post(['/', '/query'], async (req, res) => {
   try {
     const sql = req.body;
-    
+
     // Forward the request to Proton
     const response = await fetch(`${PROTON_URL}/?default_format=JSONEachRow`, {
       method: 'POST',

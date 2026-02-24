@@ -14,6 +14,19 @@ async function run() {
 
   console.log("Connecting to Proton at localhost:3218...");
   try {
+    // Ensure the random stream exists
+    console.log("Setting up random stream 'us_market_data'...");
+    const setupSql = `
+      CREATE RANDOM STREAM IF NOT EXISTS us_market_data (
+        symbol string default ['AAPL', 'MSFT', 'GOOGL'][rand()%3+1],
+        price float64 default rand()%1000/100 + 150
+      ) SETTINGS eps=10
+    `;
+    const { rows: setupRows } = await client.query(setupSql);
+    for await (const _ of setupRows) {
+      // Wait for setup to complete
+    }
+
     const { rows, abort } = await client.query("SELECT * FROM us_market_data");
 
     // Example: abort after 10 seconds
