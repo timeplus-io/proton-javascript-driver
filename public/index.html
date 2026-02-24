@@ -1,50 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Proton Stream Test</title>
     <style>
-        body { font-family: monospace; background: #1a1a1a; color: #00ff00; padding: 20px; }
-        #results { border: 1px solid #333; height: 400px; overflow-y: scroll; padding: 10px; }
-        .row { margin-bottom: 5px; border-bottom: 1px solid #222; }
-    </style>
-</head>
-<body>
-    <h1>Proton Live Stream</h1>
-    <button id="start">Start Query</button>
-    <div id="results">Click Start to see live market data...</div>
-
-    <script>
-        async function* parseNDJSON(reader) {
-            const decoder = new TextDecoder();
-            let buffer = "";
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop();
-                for (const line of lines) yield JSON.parse(line);
-            }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.5;
         }
 
-        document.getElementById('start').onclick = async () => {
-            const container = document.getElementById('results');
-            container.innerHTML = "Connecting...";
+        #results {
+            border: 1px solid #333;
+            height: 400px;
+            overflow-y: scroll;
+            padding: 10px;
+            background: #000;
+            border-radius: 4px;
+        }
 
-            const response = await fetch('http://localhost:8001/query', {
-                method: 'POST',
-                body: "SELECT symbol, price, _tp_time FROM us_market_data"
-            });
+        .row {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #222;
+            padding: 4px 0;
+        }
 
-            const stream = parseNDJSON(response.body.getReader());
-            for await (const row of stream) {
-                const div = document.createElement('div');
-                div.className = 'row';
-                div.textContent = `[${row._tp_time}] ${row.symbol}: $${row.price}`;
-                container.prepend(div); // Show newest at top
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #00cc00;
+        }
+
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .status {
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Proton Live Stream</h1>
+    <div class="controls">
+        <button id="setup">Step 1: Setup Stream</button>
+        <button id="start">Step 2: Start Query</button>
+        <button id="stop" disabled>Stop Query</button>
+        <span id="conn-status" class="status">Disconnected</span>
+    </div>
+    <div id="results">First, click "Setup Stream" to ensure the random stream exists...</div>
+
+    <!-- Include the UMD bundle from the public directory -->
+    <script src="index.umd.js"></script>
+
+    <script>
+        const { ProtonClient } = ProtonDriver;
+
+        const client = new ProtonClient({
+            host: "localhost",
+            port: 8001 // Use the proxy server to avoid CORS issues
+        });
+
+        let abortFn = null;
+
+        const setupBtn = document.getElementById('setup');
+        const startBtn = document.getElementById('start');
+        const stopBtn = document.getElementById('stop');
+        const container = document.getElementById('results');
+        const statusText = document.getElementById('conn-status');
+
+        setupBtn.onclick = async () => {
+            setupBtn.disabled = true;
+            statusText.textContent = "Setting up stream...";
+            container.innerHTML = "Creating random stream 'us_market_data' if it doesn't exist...";
+
+            const sql = `
+                CREATE RANDOM STREAM IF NOT EXISTS us_market_data (
+                    symbol string default ['AAPL', 'MSFT', 'GOOGL'][rand()%3+1],
+                    price float64 default rand()%1000/100 + 150
+                ) SETTINGS eps=10
+            `;
+
+            try {
+                const { rows } = await client.query(sql);
+                // Consume the stream (DDL queries don't typically return rows, but we need to wait for completion)
+                for await (const row of rows) {
+                    console.log("Setup response:", row);
+                }
+                statusText.textContent = "Stream Ready";
+                container.innerHTML = "Random stream 'us_market_data' is ready. Click 'Start Query' to see live data.";
+            } catch (err) {
+                console.error(err);
+                statusText.textContent = "Setup Failed";
+                container.innerHTML = `<span style="color: #ff0000;">Setup Error: ${err.message}</span><br>Make sure Proton is running at localhost:3218.`;
+            } finally {
+                setupBtn.disabled = false;
+            }
+        };
+
+        startBtn.onclick = async () => {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            statusText.textContent = "Streaming...";
+            container.innerHTML = "Connecting to Proton...";
+
+            try {
+                const { rows, abort } = await client.query("SELECT symbol, price, _tp_time FROM us_market_data");
+                abortFn = abort;
+
+                container.innerHTML = "";
+                for await (const row of rows) {
+                    const div = document.createElement('div');
+                    div.className = 'row';
+                    div.textContent = `[${row._tp_time}] ${row.symbol}: $${row.price}`;
+                    container.prepend(div);
+                }
+            } catch (err) {
+                console.error(err);
+                if (err.message.includes("aborted")) {
+                    statusText.textContent = "Stopped";
+                    container.prepend(document.createRange().createContextualFragment('<div class="row" style="color: #ff9900;">Stream stopped by user</div>'));
+                } else {
+                    statusText.textContent = "Error";
+                    container.innerHTML = `<span style="color: #ff0000;">Error: ${err.message}</span><br>Make sure the stream was created first (Step 1).`;
+                }
+            } finally {
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                abortFn = null;
+            }
+        };
+
+        stopBtn.onclick = () => {
+            if (abortFn) {
+                abortFn();
             }
         };
     </script>
 </body>
+
 </html>
