@@ -16,6 +16,7 @@ const client = new ProtonClient(config: ProtonConfig);
 |----------|------|----------|---------|-------------|
 | `host` | `string` | No | `"localhost"` | The Proton server hostname or IP address |
 | `port` | `number` | No | `3218` | The Proton server HTTP port |
+| `path` | `string` | No | - | Optional path prefix for proxy scenarios (e.g., `"/query"`) |
 | `username` | `string` | No | - | Username for basic authentication |
 | `password` | `string` | No | `""` | Password for basic authentication |
 | `timeout` | `number` | No | - | Connection timeout in milliseconds. If not set, no timeout is applied |
@@ -51,11 +52,22 @@ const client = new ProtonClient({
 });
 ```
 
+**With proxy path:**
+```typescript
+const client = new ProtonClient({
+  host: "api.example.com",
+  port: 8080,
+  path: "/query",
+});
+// Sends queries to: http://api.example.com:8080/query?default_format=JSONEachRow
+```
+
 **Full configuration:**
 ```typescript
 const client = new ProtonClient({
   host: "proton.example.com",
   port: 3218,
+  path: "/query",
   username: "admin",
   password: "secret",
   timeout: 30000,
@@ -242,6 +254,7 @@ Configuration object for the client constructor.
 interface ProtonConfig {
   host?: string;     // default: "localhost"
   port?: number;     // default: 3218
+  path?: string;     // optional path prefix for proxy scenarios
   username?: string;
   password?: string;
   timeout?: number;

@@ -10,7 +10,8 @@ export class ProtonClient {
   constructor(private config: ProtonConfig = {}) {
     const host = config.host || DEFAULT_HOST;
     const port = config.port || DEFAULT_PORT;
-    this.url = `http://${host}:${port}`;
+    const path = config.path ? `/${config.path.replace(/^\//, "")}` : "";
+    this.url = `http://${host}:${port}${path}`;
   }
 
   async query<T = RowData>(sql: string, options?: QueryOptions): Promise<QueryResult<T>> {

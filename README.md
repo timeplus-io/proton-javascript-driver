@@ -3,6 +3,14 @@
 A streaming REST client for [Timeplus Proton](https://github.com/timeplus-io/proton), designed for real-time SQL queries with infinite result streams.
 
 
+## Running Proton
+
+Start a local Proton instance using Docker:
+
+```bash
+docker run -d --pull always -p 3218:3218 -p 8463:8463 --name proton d.timeplus.com/timeplus-io/proton:latest
+```
+
 ## Installation
 
 ```bash
@@ -40,6 +48,7 @@ setTimeout(() => abort(), 10000);
 interface ProtonConfig {
   host?: string;         // Proton server host (default: "localhost")
   port?: number;         // Proton server port (default: 3218)
+  path?: string;         // Optional path prefix for proxy scenarios (e.g., "/query")
   username?: string;     // Optional basic auth username
   password?: string;     // Optional basic auth password
   timeout?: number;      // Connection timeout in milliseconds
